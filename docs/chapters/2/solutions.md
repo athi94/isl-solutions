@@ -2,11 +2,10 @@
 layout: page
 title:  "Chapter 2: Statistical Learning"
 category: "solution"
-use_math: true
+use-math: true
 ---
 
-Conceptual
-==========
+<h1 class="post-subtitle">Conceptual</h1>
 
 ### 1.
 
@@ -99,6 +98,146 @@ Animal clustering. Group animals by characteristics to more easily understand po
 
 **b)** Green. With K=1 our prediction is simply based on the output of a single nearest neighbour, which is Observation 5 as found in question 1.
 
-**c)** Observations 3, 5, and 6 are included. That's two red, one green outcome. Hence red is the prediction.
+**c)** Observations 2, 5, and 6 are included. That's two red, one green outcome. Hence red is the prediction.
 
 **d)** Small K is better for highly non-linear decision boundaries. Including less items in the nearest neighbour calculations means there is less overlap of observations used among varying points, allowing subsequent points to vary more rapidly in their decision predictions.
+
+<br><br>
+
+<h1 class="post-subtitle">Applied</h1>
+
+### 8.
+
+**a)**
+
+``` r
+college = read.csv(file = "datasets/College.csv", header = TRUE)
+```
+
+**b)**
+
+Fix can take a while... you have to close the window before the program proceeds as well.
+
+``` r
+#fix(college)
+```
+
+Let's set rownames based on the University names in the first column, then remove that column from the actual data.
+
+``` r
+rownames(college)=college[,1]
+college = college[,-1]
+#fix(college)
+```
+
+**c)**
+
+i.
+
+``` r
+summary(college)
+```
+
+    ##  Private        Apps           Accept          Enroll       Top10perc    
+    ##  No :212   Min.   :   81   Min.   :   72   Min.   :  35   Min.   : 1.00  
+    ##  Yes:565   1st Qu.:  776   1st Qu.:  604   1st Qu.: 242   1st Qu.:15.00  
+    ##            Median : 1558   Median : 1110   Median : 434   Median :23.00  
+    ##            Mean   : 3002   Mean   : 2019   Mean   : 780   Mean   :27.56  
+    ##            3rd Qu.: 3624   3rd Qu.: 2424   3rd Qu.: 902   3rd Qu.:35.00  
+    ##            Max.   :48094   Max.   :26330   Max.   :6392   Max.   :96.00  
+    ##    Top25perc      F.Undergrad     P.Undergrad         Outstate    
+    ##  Min.   :  9.0   Min.   :  139   Min.   :    1.0   Min.   : 2340  
+    ##  1st Qu.: 41.0   1st Qu.:  992   1st Qu.:   95.0   1st Qu.: 7320  
+    ##  Median : 54.0   Median : 1707   Median :  353.0   Median : 9990  
+    ##  Mean   : 55.8   Mean   : 3700   Mean   :  855.3   Mean   :10441  
+    ##  3rd Qu.: 69.0   3rd Qu.: 4005   3rd Qu.:  967.0   3rd Qu.:12925  
+    ##  Max.   :100.0   Max.   :31643   Max.   :21836.0   Max.   :21700  
+    ##    Room.Board       Books           Personal         PhD        
+    ##  Min.   :1780   Min.   :  96.0   Min.   : 250   Min.   :  8.00  
+    ##  1st Qu.:3597   1st Qu.: 470.0   1st Qu.: 850   1st Qu.: 62.00  
+    ##  Median :4200   Median : 500.0   Median :1200   Median : 75.00  
+    ##  Mean   :4358   Mean   : 549.4   Mean   :1341   Mean   : 72.66  
+    ##  3rd Qu.:5050   3rd Qu.: 600.0   3rd Qu.:1700   3rd Qu.: 85.00  
+    ##  Max.   :8124   Max.   :2340.0   Max.   :6800   Max.   :103.00  
+    ##     Terminal       S.F.Ratio      perc.alumni        Expend     
+    ##  Min.   : 24.0   Min.   : 2.50   Min.   : 0.00   Min.   : 3186  
+    ##  1st Qu.: 71.0   1st Qu.:11.50   1st Qu.:13.00   1st Qu.: 6751  
+    ##  Median : 82.0   Median :13.60   Median :21.00   Median : 8377  
+    ##  Mean   : 79.7   Mean   :14.09   Mean   :22.74   Mean   : 9660  
+    ##  3rd Qu.: 92.0   3rd Qu.:16.50   3rd Qu.:31.00   3rd Qu.:10830  
+    ##  Max.   :100.0   Max.   :39.80   Max.   :64.00   Max.   :56233  
+    ##    Grad.Rate     
+    ##  Min.   : 10.00  
+    ##  1st Qu.: 53.00  
+    ##  Median : 65.00  
+    ##  Mean   : 65.46  
+    ##  3rd Qu.: 78.00  
+    ##  Max.   :118.00
+
+ii.
+
+``` r
+pairs(college[, 1:10])
+```
+
+![](/isl-solutions/img/ch2/unnamed-chunk-5-1.png)
+
+iii.
+
+Remember that `plot()` produces boxplots when the x axis variable is categorical, as should be expected. If it's numerical it will produce scatterplots. Hence remember to order the arguments to the function appropriately.
+
+``` r
+attach(college)
+plot(Private, Outstate, xlab="Private", ylab="Out-out-state")
+```
+
+![](/isl-solutions/img/ch2/unnamed-chunk-6-1.png)
+
+iv.
+
+We first make a vector of "No" for as many universities as there are in the dataset. We then set some elements of that vector to "Yes" when the corresponding university has greater than 50% of their own students coming from the top 10% of their respective high schools. We then simply add the data to the college dataset and view a summary of it.
+
+``` r
+Elite = rep("No", nrow(college))
+Elite[college$Top10perc>50] = "Yes"
+Elite = as.factor(Elite)
+college = data.frame(college, Elite)
+summary(college$Elite)
+```
+
+    ##  No Yes 
+    ## 699  78
+
+``` r
+plot(Elite, Outstate, xlab="Elite", ylab="Out-of-state")
+```
+
+![](/isl-solutions/img/ch2/unnamed-chunk-8-1.png)
+
+v.
+
+``` r
+par(mfrow=c(2,2))
+attach(college)
+```
+
+    ## The following object is masked _by_ .GlobalEnv:
+    ## 
+    ##     Elite
+
+    ## The following objects are masked from college (pos = 3):
+    ## 
+    ##     Accept, Apps, Books, Enroll, Expend, F.Undergrad, Grad.Rate,
+    ##     Outstate, P.Undergrad, perc.alumni, Personal, PhD, Private,
+    ##     Room.Board, S.F.Ratio, Terminal, Top10perc, Top25perc
+
+``` r
+hist(Apps, main="Histogram of Applications Received")
+hist(perc.alumni, col="red", main="Histogram of Alumni Donation Rate")
+hist(S.F.Ratio, col="purple", breaks=10, main="Histogram of Student/Faculty Ratio")
+hist(Expend, breaks=100, main="Histogram of Expenditure per Student")
+```
+
+![](/isl-solutions/img/ch2/unnamed-chunk-9-1.png)
+
+vi.
