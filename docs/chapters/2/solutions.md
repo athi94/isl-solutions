@@ -408,7 +408,9 @@ sapply(auto_reduc[, 1:7], sd)
 pairs(auto)
 ```
 
-![](img/unnamed-chunk-20-1.png) MPG decreases exponentially with displacement, horsepower and weight. Horsepower increases linearly with weight. There's a weak correlation showing cars becoming generally more efficient over time.
+![](img/unnamed-chunk-20-1.png) 
+
+MPG decreases exponentially with displacement, horsepower and weight. Horsepower increases linearly with weight. There's a weak correlation showing cars becoming generally more efficient over time.
 
 **f)**
 
