@@ -1,6 +1,3 @@
----
-output: github_document
----
 ```{r opts, echo = FALSE}
 knitr::opts_chunk$set(
   fig.path = "img/"
