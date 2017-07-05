@@ -531,7 +531,7 @@ mapply(function(x, i) ecdf(Boston[, i])(x), Boston[min_ind, ], seq_along(Boston[
     ##       lstat        medv 
     ## 0.978260870 0.003952569
 
-We can see that this tract of land also has the highest proportion of old houses, highest accessibility to radial highways, and highest proportion of black population. It also has significantly high crime rate, proportion of large lots of residential land, industrial business land area, nitrogen oxide concentrations, property tax rate, pupil teacher ratio, and low-skill workers (lstat). It also has significantly low number of average rooms per dwelling, and is extremely close to major employment centres.
+We can see that this tract of land also has the highest proportion of old houses, highest accessibility to radial highways, and highest proportion of black population. It also has significantly high crime rate, proportion of large lots of residential land, industrial business land area, nitrogen oxide concentrations, property tax rate, pupil teacher ratio, and low-skill workers (lstat). It also has significantly low number of average rooms per dwelling, and is (relatively) very close to major employment centres.
 
 **h)**
 
