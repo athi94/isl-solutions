@@ -1,12 +1,20 @@
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
+    CommonHTML: {
+      linebreaks: {
+        automatic: true
+      }
+    },
     TeX: {
       equationNumbers: {
         autoNumber: "AMS"
-      }
+      },
+      extensions: [
+        "AMSmath.js",
+      ]
     },
     tex2jax: {
-      inlineMath: [ ['$','$'], ['\(', '\)'] ],
+      inlineMath: [ ['$','$'] ],
       displayMath: [ ['$$','$$'] ],
       processEscapes: true,
     }
