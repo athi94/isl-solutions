@@ -19,9 +19,9 @@ email: a.thind94@gmail.com
 description: > # this means to ignore newlines until "baseurl:"
   "A set of unofficial solutions for 'An Introduction to Statistical Learning: with Applications in R"
 baseurl: "/isl-solutions" # the subpath of your site, e.g. /blog
-url: "https://athind94.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://athi94.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: 
-github_username:  athind94
+github_username:  athi94
 footer_text: >
 
 # Build settings
