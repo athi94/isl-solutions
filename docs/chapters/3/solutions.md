@@ -2,6 +2,7 @@
 layout: page
 title:  "Chapter 3: Linear Regression"
 category: "solution"
+chapter: 3
 use-math: true
 ---
 

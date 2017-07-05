@@ -2,6 +2,7 @@
 layout: page
 title:  "Chapter 2: Statistical Learning"
 category: "solution"
+chapter: 2
 use-math: true
 ---
 
