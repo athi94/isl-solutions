@@ -103,8 +103,8 @@ Substitute in the point ($\overline{x}, \overline{y}$)
 
 $$
 \begin{align*}
-\overline{y} &= \hat{\beta_0} + \hat{\beta_1}\overline{x} \
- &= \overline{y} - \hat{\beta_1}\overline{x} + \hat{\beta_1}\overline{x} \
+\overline{y} &= \hat{\beta_0} + \hat{\beta_1}\overline{x} \\
+ &= \overline{y} - \hat{\beta_1}\overline{x} + \hat{\beta_1}\overline{x} \\
  &= \overline{y}
 \end{align*}
 $$
@@ -121,9 +121,9 @@ Where $TSS = \sum y_i^2$ and $RSS = \sum(y_i - \hat{y_i})^2$ and assuming $\over
 
 $$
 \begin{align*}
-R^2 &= \frac{TSS-RSS}{TSS} \
-&= \frac{\sum\limits_{i=1}^n y_i^2 - \sum\limits_{i=1}^n(y_i - \hat{y_i})^2}{\sum\limits_{i=1}^n y_i^2} \
-&= \frac{\sum\limits_{i=1}^n y_i^2 - (y_i - \hat{y})^2}{\sum\limits_{i=1}^n y_i^2} \
+R^2 &= \frac{TSS-RSS}{TSS} \\
+&= \frac{\sum\limits_{i=1}^n y_i^2 - \sum\limits_{i=1}^n(y_i - \hat{y_i})^2}{\sum\limits_{i=1}^n y_i^2} \\
+&= \frac{\sum\limits_{i=1}^n y_i^2 - (y_i - \hat{y})^2}{\sum\limits_{i=1}^n y_i^2} \\
 &= \frac{\sum\limits_{i=1}^n 2\hat{y}y_i - \hat{y}^2}{\sum\limits_{i=1}^n y_i^2}
 \end{align*}
 $$
@@ -132,13 +132,13 @@ Under the assumption that $\overline{y} = \overline{x} = 0$, $\hat{\beta_0} = 0$
 
 $$
 \begin{align*}
-R^2 &= \frac{\sum\limits_{i=1}^n 2\beta_1x_iy_i - (\hat{\beta_1}x_i)^2}{\sum\limits_{i=1}^n y_i^2} \
-&= \hat{\beta_1}\frac{2\sum\limits_{i=1}^n x_iy_i - \hat{\beta_1}\sum\limits_{i=1}^n x_i^2}{\sum\limits_{i=1}^n y_i^2} \
-&= \hat{\beta_1}\frac{2\sum\limits_{i=1}^n x_iy_i - \frac{\sum x_iy_i}{\sum x_i^2}\sum\limits_{i=1}^n x_i^2}{\sum\limits_{i=1}^n y_i^2} \
-&= \hat{\beta_1}\frac{2\sum\limits_{i=1}^n x_iy_i - \sum\limits_{i=1}^n x_iy_i}{\sum\limits_{i=1}^n y_i^2} \
+R^2 &= \frac{\sum\limits_{i=1}^n 2\beta_1x_iy_i - (\hat{\beta_1}x_i)^2}{\sum\limits_{i=1}^n y_i^2} \\
+&= \hat{\beta_1}\frac{2\sum\limits_{i=1}^n x_iy_i - \hat{\beta_1}\sum\limits_{i=1}^n x_i^2}{\sum\limits_{i=1}^n y_i^2} \\
+&= \hat{\beta_1}\frac{2\sum\limits_{i=1}^n x_iy_i - \frac{\sum x_iy_i}{\sum x_i^2}\sum\limits_{i=1}^n x_i^2}{\sum\limits_{i=1}^n y_i^2} \\
+&= \hat{\beta_1}\frac{2\sum\limits_{i=1}^n x_iy_i - \sum\limits_{i=1}^n x_iy_i}{\sum\limits_{i=1}^n y_i^2} \\
 &= \hat{\beta_1}\frac{\sum\limits_{i=1}^n x_iy_i}{\sum\limits_{i=1}^n y_i^2}\
-&= \frac{\sum x_iy_i}{\sum x_i^2}\frac{\sum\limits_{i=1}^n x_iy_i}{\sum\limits_{i=1}^n y_i^2} \
-&= \frac{(\sum\limits_{i=1}^n x_iy_i)^2}{\sum\limits_{i=1}^n x_i^2 \sum\limits_{i=1}^n y_i^2} = Cor(X, Y)^2\
+&= \frac{\sum x_iy_i}{\sum x_i^2}\frac{\sum\limits_{i=1}^n x_iy_i}{\sum\limits_{i=1}^n y_i^2} \\
+&= \frac{(\sum\limits_{i=1}^n x_iy_i)^2}{\sum\limits_{i=1}^n x_i^2 \sum\limits_{i=1}^n y_i^2} = Cor(X, Y)^2\\
 
 \end{align*} 
 $$
