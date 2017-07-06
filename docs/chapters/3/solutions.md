@@ -77,7 +77,7 @@ We have
 
 $$ \hat{y_i} = x_i\hat{\beta} $$
 
-$$ \hat{beta} = \frac{\sum\limits_{j=1}^nx_jy_j}{\sum\limits_{k=1}^nx_k^2} $$
+$$ \hat{\beta} = \frac{\sum\limits_{j=1}^nx_jy_j}{\sum\limits_{k=1}^nx_k^2} $$
 
 Note we're not using the $i$ and $i'$ terminology because it's needlessly confusing in this case.
 
