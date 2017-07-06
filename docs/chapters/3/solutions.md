@@ -117,7 +117,11 @@ $$ R^2 = \frac{TSS-RSS}{TSS} $$
 
 $$ Cor(X,Y) = \frac{\sum\limits_{i=1}^n x_iy_i}{\sqrt{\sum\limits_{i=1}^n x_i^2} \sqrt{\sum\limits_{i=1}^n y_i^2}} $$
 
+<br>
+
 Where $TSS = \sum y_i^2$ and $RSS = \sum(y_i - \hat{y_i})^2$ and assuming $\overline{x} = \overline{y} = 0$.
+
+<br>
 
 $$
 \begin{align*}
@@ -128,7 +132,11 @@ R^2 &= \frac{TSS-RSS}{TSS} \\
 \end{align*}
 $$
 
+<br>
+
 Under the assumption that $\overline{y} = \overline{x} = 0$, $\hat{\beta_0} = 0$ and $\hat{\beta_1} = \frac{\sum x_iy_i}{\sum x_i^2}$. Therefore $\hat{y} = \hat{\beta_1}x$. Substituting that in:
+
+<br>
 
 $$
 \begin{align*}
