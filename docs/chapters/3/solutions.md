@@ -759,7 +759,6 @@ Already explained this.
 **d)**
 
 $$\hat{\beta} = \frac{\sum x_iy_i}{\sum x_i^2}$$
-
 $$SE(\hat{\beta}) = \frac{\sum{(y_i - x_i\hat{\beta})^2}}{(n-1)\sum x_i^2}$$
 
 $$
