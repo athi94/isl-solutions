@@ -1137,4 +1137,605 @@ confint(lm.fit3)
 
 The least noisy set has the narrowest interval, and the noisiest set has the largest interval. As would be expected.
 
+### 14.
+
+**a)**
+
+``` r
+set.seed(1)
+x1 = runif(100)
+x2 = 0.5*x1 + rnorm(100)/10
+y = 2 + 2*x1 + 0.3*x2 + rnorm(100)
+```
+
+$$Y = 2 + 2X\_1 + 0.3X\_2 + \\epsilon \\\\ where~\\beta\_0 = 2,~\\beta\_1 = 2,~\\beta\_2 = 0.3$$
+
+**b)**
+
+``` r
+plot(x1, x2)
+```
+
+![](img/unnamed-chunk-48-1.png)
+
+It's easy to observe the linear relationship between x1 and x2 from the scatterplot.
+
+**c)**
+
+``` r
+lm.fit = lm(y ~ x1 + x2)
+summary(lm.fit)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = y ~ x1 + x2)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -2.8311 -0.7273 -0.0537  0.6338  2.3359 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   2.1305     0.2319   9.188 7.61e-15 ***
+    ## x1            1.4396     0.7212   1.996   0.0487 *  
+    ## x2            1.0097     1.1337   0.891   0.3754    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 1.056 on 97 degrees of freedom
+    ## Multiple R-squared:  0.2088, Adjusted R-squared:  0.1925 
+    ## F-statistic:  12.8 on 2 and 97 DF,  p-value: 1.164e-05
+
+So it's easy to see that our estimates for *β*<sub>0</sub>, *β*<sub>1</sub> and *β*<sub>2</sub> are pretty far off the true values. We can't reject the null hypothesis for *β*<sub>2</sub>, we can reject it for *β*<sub>1</sub> with a signifiance level of 5% which is typical.
+
+**d)**
+
+``` r
+lm.fit = lm(y ~ x1)
+summary(lm.fit)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = y ~ x1)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -2.89495 -0.66874 -0.07785  0.59221  2.45560 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   2.1124     0.2307   9.155 8.27e-15 ***
+    ## x1            1.9759     0.3963   4.986 2.66e-06 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 1.055 on 98 degrees of freedom
+    ## Multiple R-squared:  0.2024, Adjusted R-squared:  0.1942 
+    ## F-statistic: 24.86 on 1 and 98 DF,  p-value: 2.661e-06
+
+We can comfortably reject the null hypothesis for *β*<sub>1</sub>.
+
+**e)**
+
+``` r
+lm.fit = lm(y ~ x2)
+summary(lm.fit)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = y ~ x2)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -2.62687 -0.75156 -0.03598  0.72383  2.44890 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   2.3899     0.1949   12.26  < 2e-16 ***
+    ## x2            2.8996     0.6330    4.58 1.37e-05 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 1.072 on 98 degrees of freedom
+    ## Multiple R-squared:  0.1763, Adjusted R-squared:  0.1679 
+    ## F-statistic: 20.98 on 1 and 98 DF,  p-value: 1.366e-05
+
+Again, we can reject the null hypothesis for *β*<sub>1</sub> in this scenario.
+
+**f)**
+
+No. Let's first consider first what a correlation means, that there's some direct relationship between two predictors. We know the exact relationship in this instance, let's do some basic maths and see where that gets us.
+
+$$
+\begin{align*}
+Y &= 2 + 2X_1 + 0.3X\_2 + \epsilon \\
+&= 2 + 2X_1 + 0.3(0.5X_1 + \gamma) \\
+&= 2 + 2.8X_1 + \epsilon'
+\end{align*}
+$$
+
+So it's easy to see that when a correlation between predictors exists, in reality the true form will simplify to using only one of the predictors. And of course we could just substitute in *X*<sub>1</sub> instead of *X*<sub>2</sub> and get an equally valid true form.
+
+So we would expect fitting a linear regression with only one of the two predictors to both result in statistically significant coefficients. But when we fit the model with both predictors one will not be significant, in essence because the other already is able to capture the information it contributes to the model.
+
+**g)**
+
+``` r
+x1 = c(x1, 0.1)
+x2 = c(x2, 0.8)
+y = c(y, 6)
+
+lm.fit1 = lm(y ~ x1 + x2)
+summary(lm.fit1)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = y ~ x1 + x2)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -2.73348 -0.69318 -0.05263  0.66385  2.30619 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   2.2267     0.2314   9.624 7.91e-16 ***
+    ## x1            0.5394     0.5922   0.911  0.36458    
+    ## x2            2.5146     0.8977   2.801  0.00614 ** 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 1.075 on 98 degrees of freedom
+    ## Multiple R-squared:  0.2188, Adjusted R-squared:  0.2029 
+    ## F-statistic: 13.72 on 2 and 98 DF,  p-value: 5.564e-06
+
+``` r
+plot(lm.fit1, which=5)
+```
+
+![](img/unnamed-chunk-52-1.png)
+
+We see that now *X*<sub>2</sub> has become the significant predictor as opposed to *X*<sub>1</sub> and that the new point has high leverage.
+
+``` r
+lm.fit2 = lm(y ~ x1)
+summary(lm.fit2)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = y ~ x1)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -2.8897 -0.6556 -0.0909  0.5682  3.5665 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   2.2569     0.2390   9.445 1.78e-15 ***
+    ## x1            1.7657     0.4124   4.282 4.29e-05 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 1.111 on 99 degrees of freedom
+    ## Multiple R-squared:  0.1562, Adjusted R-squared:  0.1477 
+    ## F-statistic: 18.33 on 1 and 99 DF,  p-value: 4.295e-05
+
+``` r
+plot(lm.fit2, which=5)
+```
+
+![](img/unnamed-chunk-53-1.png)
+
+In this model the new point is an outlier.
+
+``` r
+lm.fit3 = lm(y ~ x2)
+summary(lm.fit3)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = y ~ x2)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -2.64729 -0.71021 -0.06899  0.72699  2.38074 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   2.3451     0.1912  12.264  < 2e-16 ***
+    ## x2            3.1190     0.6040   5.164 1.25e-06 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 1.074 on 99 degrees of freedom
+    ## Multiple R-squared:  0.2122, Adjusted R-squared:  0.2042 
+    ## F-statistic: 26.66 on 1 and 99 DF,  p-value: 1.253e-06
+
+``` r
+plot(lm.fit3, which=5)
+```
+
+![](img/unnamed-chunk-54-1.png)
+
+Again in the third model, the new point has high leverage.
+
+### 15.
+
+``` r
+library(MASS)
+```
+
+**a)**
+
+``` r
+# Let's just make sure chas gets represented properly as a qualitative variable
+# Boston$chas <- factor(Boston$chas, labels = c("N","Y"))
+
+pvals = c()
+for (predictor in Boston[-1]) {
+    lm.fit = lm(crim ~ predictor, data=Boston)
+    p = summary(lm.fit)$coefficients[2,4]
+    pvals = c(pvals, p)
+}
+names(Boston[-1])[which(pvals<0.05)]
+```
+
+    ##  [1] "zn"      "indus"   "nox"     "rm"      "age"     "dis"     "rad"    
+    ##  [8] "tax"     "ptratio" "black"   "lstat"   "medv"
+
+All I've done is fitting the regression model in a loop using each predictor except crim again, I extract the p value from the summary and put it in an array. At the end I check what p values have a significance level &gt; 5% and use their indices to grab the corresponding names out of Boston again. We can see that every predictor has a statistically significant significant association with the responce except "chas".
+
+**b)**
+
+``` r
+lm.fit = lm(crim ~ ., data=Boston)
+summary(lm.fit)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ ., data = Boston)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -9.924 -2.120 -0.353  1.019 75.051 
+    ## 
+    ## Coefficients:
+    ##               Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)  17.033228   7.234903   2.354 0.018949 *  
+    ## zn            0.044855   0.018734   2.394 0.017025 *  
+    ## indus        -0.063855   0.083407  -0.766 0.444294    
+    ## chas         -0.749134   1.180147  -0.635 0.525867    
+    ## nox         -10.313535   5.275536  -1.955 0.051152 .  
+    ## rm            0.430131   0.612830   0.702 0.483089    
+    ## age           0.001452   0.017925   0.081 0.935488    
+    ## dis          -0.987176   0.281817  -3.503 0.000502 ***
+    ## rad           0.588209   0.088049   6.680 6.46e-11 ***
+    ## tax          -0.003780   0.005156  -0.733 0.463793    
+    ## ptratio      -0.271081   0.186450  -1.454 0.146611    
+    ## black        -0.007538   0.003673  -2.052 0.040702 *  
+    ## lstat         0.126211   0.075725   1.667 0.096208 .  
+    ## medv         -0.198887   0.060516  -3.287 0.001087 ** 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 6.439 on 492 degrees of freedom
+    ## Multiple R-squared:  0.454,  Adjusted R-squared:  0.4396 
+    ## F-statistic: 31.47 on 13 and 492 DF,  p-value: < 2.2e-16
+
+We can reject the null hypothesis for zn, dis, rad, black, medv.
+
+**c)**
+
+Obviously there's less statistically significant predictors in the multiple linear regression model, this indicates collinearity between some predictors which should be expected taking a logical look at what each predictor represents.
+
+``` r
+slm_coeffs = c()
+for (predictor in Boston[-1]) {
+    lm.fit = lm(crim ~ predictor, data=Boston)
+    c = coef(lm.fit)[2]
+    slm_coeffs = c(slm_coeffs, c)
+}
+
+lm.fit = lm(crim ~ ., data=Boston)
+plot(slm_coeffs, coef(lm.fit)[-1], xlab="Simple Regression Coef.", ylab="Multiple Regression Coef.")
+
+library(calibrate)
+textxy(slm_coeffs, coef(lm.fit)[-1], names(Boston[-1]))
+```
+
+![](img/unnamed-chunk-58-1.png)
+
+**d)**
+
+``` r
+lapply(Boston[-c(1, 4)], function(predictor) {
+    fit = lm(crim ~ poly(predictor, 3), data=Boston)
+    summary(fit)
+})
+```
+
+    ## $zn
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -4.821 -4.614 -1.294  0.473 84.130 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)           3.6135     0.3722   9.709  < 2e-16 ***
+    ## poly(predictor, 3)1 -38.7498     8.3722  -4.628  4.7e-06 ***
+    ## poly(predictor, 3)2  23.9398     8.3722   2.859  0.00442 ** 
+    ## poly(predictor, 3)3 -10.0719     8.3722  -1.203  0.22954    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 8.372 on 502 degrees of freedom
+    ## Multiple R-squared:  0.05824,    Adjusted R-squared:  0.05261 
+    ## F-statistic: 10.35 on 3 and 502 DF,  p-value: 1.281e-06
+    ## 
+    ## 
+    ## $indus
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -8.278 -2.514  0.054  0.764 79.713 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)            3.614      0.330  10.950  < 2e-16 ***
+    ## poly(predictor, 3)1   78.591      7.423  10.587  < 2e-16 ***
+    ## poly(predictor, 3)2  -24.395      7.423  -3.286  0.00109 ** 
+    ## poly(predictor, 3)3  -54.130      7.423  -7.292  1.2e-12 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 7.423 on 502 degrees of freedom
+    ## Multiple R-squared:  0.2597, Adjusted R-squared:  0.2552 
+    ## F-statistic: 58.69 on 3 and 502 DF,  p-value: < 2.2e-16
+    ## 
+    ## 
+    ## $nox
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -9.110 -2.068 -0.255  0.739 78.302 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)           3.6135     0.3216  11.237  < 2e-16 ***
+    ## poly(predictor, 3)1  81.3720     7.2336  11.249  < 2e-16 ***
+    ## poly(predictor, 3)2 -28.8286     7.2336  -3.985 7.74e-05 ***
+    ## poly(predictor, 3)3 -60.3619     7.2336  -8.345 6.96e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 7.234 on 502 degrees of freedom
+    ## Multiple R-squared:  0.297,  Adjusted R-squared:  0.2928 
+    ## F-statistic: 70.69 on 3 and 502 DF,  p-value: < 2.2e-16
+    ## 
+    ## 
+    ## $rm
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -18.485  -3.468  -2.221  -0.015  87.219 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)           3.6135     0.3703   9.758  < 2e-16 ***
+    ## poly(predictor, 3)1 -42.3794     8.3297  -5.088 5.13e-07 ***
+    ## poly(predictor, 3)2  26.5768     8.3297   3.191  0.00151 ** 
+    ## poly(predictor, 3)3  -5.5103     8.3297  -0.662  0.50858    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 8.33 on 502 degrees of freedom
+    ## Multiple R-squared:  0.06779,    Adjusted R-squared:  0.06222 
+    ## F-statistic: 12.17 on 3 and 502 DF,  p-value: 1.067e-07
+    ## 
+    ## 
+    ## $age
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -9.762 -2.673 -0.516  0.019 82.842 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)           3.6135     0.3485  10.368  < 2e-16 ***
+    ## poly(predictor, 3)1  68.1820     7.8397   8.697  < 2e-16 ***
+    ## poly(predictor, 3)2  37.4845     7.8397   4.781 2.29e-06 ***
+    ## poly(predictor, 3)3  21.3532     7.8397   2.724  0.00668 ** 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 7.84 on 502 degrees of freedom
+    ## Multiple R-squared:  0.1742, Adjusted R-squared:  0.1693 
+    ## F-statistic: 35.31 on 3 and 502 DF,  p-value: < 2.2e-16
+    ## 
+    ## 
+    ## $dis
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -10.757  -2.588   0.031   1.267  76.378 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)           3.6135     0.3259  11.087  < 2e-16 ***
+    ## poly(predictor, 3)1 -73.3886     7.3315 -10.010  < 2e-16 ***
+    ## poly(predictor, 3)2  56.3730     7.3315   7.689 7.87e-14 ***
+    ## poly(predictor, 3)3 -42.6219     7.3315  -5.814 1.09e-08 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 7.331 on 502 degrees of freedom
+    ## Multiple R-squared:  0.2778, Adjusted R-squared:  0.2735 
+    ## F-statistic: 64.37 on 3 and 502 DF,  p-value: < 2.2e-16
+    ## 
+    ## 
+    ## $rad
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -10.381  -0.412  -0.269   0.179  76.217 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)           3.6135     0.2971  12.164  < 2e-16 ***
+    ## poly(predictor, 3)1 120.9074     6.6824  18.093  < 2e-16 ***
+    ## poly(predictor, 3)2  17.4923     6.6824   2.618  0.00912 ** 
+    ## poly(predictor, 3)3   4.6985     6.6824   0.703  0.48231    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 6.682 on 502 degrees of freedom
+    ## Multiple R-squared:    0.4,  Adjusted R-squared:  0.3965 
+    ## F-statistic: 111.6 on 3 and 502 DF,  p-value: < 2.2e-16
+    ## 
+    ## 
+    ## $tax
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -13.273  -1.389   0.046   0.536  76.950 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)           3.6135     0.3047  11.860  < 2e-16 ***
+    ## poly(predictor, 3)1 112.6458     6.8537  16.436  < 2e-16 ***
+    ## poly(predictor, 3)2  32.0873     6.8537   4.682 3.67e-06 ***
+    ## poly(predictor, 3)3  -7.9968     6.8537  -1.167    0.244    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 6.854 on 502 degrees of freedom
+    ## Multiple R-squared:  0.3689, Adjusted R-squared:  0.3651 
+    ## F-statistic:  97.8 on 3 and 502 DF,  p-value: < 2.2e-16
+    ## 
+    ## 
+    ## $ptratio
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -6.833 -4.146 -1.655  1.408 82.697 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)            3.614      0.361  10.008  < 2e-16 ***
+    ## poly(predictor, 3)1   56.045      8.122   6.901 1.57e-11 ***
+    ## poly(predictor, 3)2   24.775      8.122   3.050  0.00241 ** 
+    ## poly(predictor, 3)3  -22.280      8.122  -2.743  0.00630 ** 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 8.122 on 502 degrees of freedom
+    ## Multiple R-squared:  0.1138, Adjusted R-squared:  0.1085 
+    ## F-statistic: 21.48 on 3 and 502 DF,  p-value: 4.171e-13
+    ## 
+    ## 
+    ## $black
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -13.096  -2.343  -2.128  -1.439  86.790 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)           3.6135     0.3536  10.218   <2e-16 ***
+    ## poly(predictor, 3)1 -74.4312     7.9546  -9.357   <2e-16 ***
+    ## poly(predictor, 3)2   5.9264     7.9546   0.745    0.457    
+    ## poly(predictor, 3)3  -4.8346     7.9546  -0.608    0.544    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 7.955 on 502 degrees of freedom
+    ## Multiple R-squared:  0.1498, Adjusted R-squared:  0.1448 
+    ## F-statistic: 29.49 on 3 and 502 DF,  p-value: < 2.2e-16
+    ## 
+    ## 
+    ## $lstat
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -15.234  -2.151  -0.486   0.066  83.353 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)           3.6135     0.3392  10.654   <2e-16 ***
+    ## poly(predictor, 3)1  88.0697     7.6294  11.543   <2e-16 ***
+    ## poly(predictor, 3)2  15.8882     7.6294   2.082   0.0378 *  
+    ## poly(predictor, 3)3 -11.5740     7.6294  -1.517   0.1299    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 7.629 on 502 degrees of freedom
+    ## Multiple R-squared:  0.2179, Adjusted R-squared:  0.2133 
+    ## F-statistic: 46.63 on 3 and 502 DF,  p-value: < 2.2e-16
+    ## 
+    ## 
+    ## $medv
+    ## 
+    ## Call:
+    ## lm(formula = crim ~ poly(predictor, 3), data = Boston)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -24.427  -1.976  -0.437   0.439  73.655 
+    ## 
+    ## Coefficients:
+    ##                     Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)            3.614      0.292  12.374  < 2e-16 ***
+    ## poly(predictor, 3)1  -75.058      6.569 -11.426  < 2e-16 ***
+    ## poly(predictor, 3)2   88.086      6.569  13.409  < 2e-16 ***
+    ## poly(predictor, 3)3  -48.033      6.569  -7.312 1.05e-12 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 6.569 on 502 degrees of freedom
+    ## Multiple R-squared:  0.4202, Adjusted R-squared:  0.4167 
+    ## F-statistic: 121.3 on 3 and 502 DF,  p-value: < 2.2e-16
+
+Yes for all except black, also chas as it is a qualitative variable.
+
+
 
