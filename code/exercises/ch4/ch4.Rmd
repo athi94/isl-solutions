@@ -1,0 +1,419 @@
+---
+output: github_document
+---
+```{r opts, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "img/",
+  sanitize = FALSE
+)
+```
+
+### 10.
+
+```{r}
+library(ISLR)
+attach(Weekly)
+```
+
+**a)**
+
+```{r}
+names(Weekly)
+dim(Weekly)
+```
+
+
+```{r}
+corrplot::corrplot(cor(Weekly[,-9]), method="circle")
+```
+
+Just like the smarket data there seems to be no correlation between any predictors except volume and year which is expected, volume should be growing over time.
+
+```{r}
+plot(Volume)
+```
+
+**b)**
+
+```{r}
+glm.fit = glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data=Weekly, family=binomial)
+summary(glm.fit)
+```
+
+Lag2 has statistical significance.
+
+**c)**
+
+```{r}
+glm.prob = predict(glm.fit, type="response")
+glm.pred = rep("Down", length(Direction))
+glm.pred[glm.prob > 0.5] = "Up"
+table(glm.pred, Direction)
+mean(glm.pred == Direction)
+```
+
+Overall prediction rate is 56.1%, the majority of the errors are in the false positive space. i.e. In this case meaning the model is bad at predicting when the market will go down, doing so at only 54/(430+54) = 11.1% accuracy.
+
+**d)**
+
+```{r}
+train = Year <= 2008
+test = !train
+glm.fit = glm(Direction ~ Lag2, data=Weekly, family=binomial, subset=train)
+summary(glm.fit)
+
+glm.prob = predict(glm.fit, Weekly[test, ], type="response")
+glm.pred = rep("Down", length(Direction[test]))
+glm.pred[glm.prob > 0.5] = "Up"
+table(glm.pred, Direction[test])
+mean(glm.pred == Direction[test])
+```
+
+**e)**
+
+```{r}
+library(MASS) # Needed to load in LDA
+lda.fit = lda(Direction ~ Lag2, data=Weekly, subset=train)
+lda.pred = predict(lda.fit, Weekly[test,])$class
+table(lda.pred, Direction[test])
+mean(lda.pred == Direction[test])
+```
+
+**f)**
+
+```{r}
+qda.fit = qda(Direction ~ Lag2, data=Weekly, subset=train)
+qda.pred = predict(qda.fit, Weekly[test,])$class
+table(qda.pred, Direction[test])
+mean(qda.pred == Direction[test])
+```
+
+**g)**
+
+```{r}
+library(class)
+set.seed(1) # To make this result reproducible
+knn.pred = knn(data.frame(Lag2[train]), data.frame(Lag2[test]), Direction[train], k=1)
+table(knn.pred, Direction[test])
+mean(knn.pred == Direction[test])
+```
+
+**h)**
+
+Logistic regression and LDA give identical results, and are both superior to QDA and KNN (n=1).
+
+**i)**
+
+Let's go through some logistic regression models first.
+
+```{r}
+glm.fit = glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data=Weekly, family=binomial, subset=train)
+summary(glm.fit)
+```
+
+On the training set it looks like only Lag1 has statistical significance, not Lag2 so let's try using that. This isn't really a good strategy, just seeing that statistical significance of predictors changed just by separating the full data into train and test sets implies there's no real significance there in the first place.
+
+```{r}
+glm.fit = glm(Direction ~ Lag1, data=Weekly, family=binomial, subset=train)
+summary(glm.fit)
+
+glm.prob = predict(glm.fit, Weekly[test, ], type="response")
+glm.pred = rep("Down", length(Direction[test]))
+glm.pred[glm.prob > 0.5] = "Up"
+table(glm.pred, Direction[test])
+mean(glm.pred == Direction[test])
+```
+
+This actually performs worse than our previous logistic regression model, let's try an interaction effect between Lag1 and Lag2 for fun.
+
+```{r}
+glm.fit = glm(Direction ~ Lag1*Lag2, data=Weekly, family=binomial, subset=train)
+summary(glm.fit)
+
+glm.prob = predict(glm.fit, Weekly[test, ], type="response")
+glm.pred = rep("Down", length(Direction[test]))
+glm.pred[glm.prob > 0.5] = "Up"
+table(glm.pred, Direction[test])
+mean(glm.pred == Direction[test])
+```
+
+The mixed term has no significance, again the model performs worse than the original. Let's experiment with different K values for KNN.
+
+```{r}
+kvals = 1:300
+error_rates = mapply(function(kval) {
+        knn.pred = knn(data.frame(Lag2[train]), data.frame(Lag2[test]), Direction[train], k=kval)
+        return(mean(knn.pred != Direction[test]))
+    }, kvals)
+
+invk = 1/kvals
+plot(invk, error_rates, log="x", xlab="1/k", ylab="Error Rate")
+
+1-error_rates[160]
+```
+
+Optimal k value is approximately 160 taking a look at the general trend and discounting outliers. The prediction rate at this point is 62.5% which is identical to the prediction rate of our original logistic regression and LDA models.
+
+```{r}
+knn.pred = knn(data.frame(Lag2[train]), data.frame(Lag2[test]), Direction[train], k=160)
+table(knn.pred, Direction[test])
+```
+
+The confusion matrix is also pretty similar to the matrices given by the original logistic regression and LDA models, the model is still quite bad at predicting weeks in which the market goes down but good at predicting when it goes up.
+
+### 11.
+
+```{r}
+detach(Weekly)
+attach(Auto)
+```
+
+**a)**
+
+```{r}
+mpg01 = rep(0, length(mpg))
+mpg01[mpg > median(mpg)] = 1
+Auto = data.frame(Auto, mpg01)
+```
+
+**b)**
+
+So we've investigated associations with mpg in previous labs and we expect those associations to carry over to the newly created categorical variable mpg01. We can look at the pairs plot again to quickly spot associations with mpg, we can also create a series of boxplots to show definitively that these predictors have associations with mpg01. I haven't included every plot for brevity.
+
+```{r}
+pairs(Auto)
+auto_normalized = scale(Auto[,-9])
+boxplot(displacement ~ mpg01, ylab="Displacement", xlab="mpg01")
+boxplot(weight ~ mpg01, ylab="Weight", xlab="mpg01")
+boxplot(horsepower ~ mpg01, ylab="Horsepower", xlab="mpg01")
+```
+
+
+**c)**
+
+There's 392 entries, lets use 75% for training and the remaining for test.
+
+```{r}
+sample_size = floor(0.75 * nrow(Auto))
+set.seed(1) # so the training data is reproducible
+sample_part = sample(seq_len(nrow(Auto)), sample_size)
+
+auto_training = Auto[sample_part, ]
+auto_test = Auto[-sample_part, ]
+mpg01_train = mpg01[sample_part]
+mpg01_test = mpg01[-sample_part]
+```
+
+**d)**
+
+```{r}
+lda.fit = lda(mpg01 ~ cylinders + displacement + horsepower + weight + year, data=auto_training)
+lda.pred = predict(lda.fit, auto_test)$class
+table(lda.pred, mpg01_test)
+mean(lda.pred != mpg01_test)
+```
+
+We see there's only a 4.1% error rate which is excellent. All the errors are focused in the false positive quadrant which has a class error rate of 4/(4+42) = 8.7%.
+
+**e)**
+
+```{r}
+qda.fit = qda(mpg01 ~ cylinders + displacement + horsepower + weight + year, data=auto_training)
+qda.pred = predict(qda.fit, auto_test)$class
+table(qda.pred, mpg01_test)
+mean(qda.pred != mpg01_test)
+```
+
+
+QDA performs slightly worse wth a 7.1% error rate.
+
+**f)**
+
+```{r}
+glm.fit = glm(mpg01 ~ cylinders + displacement + horsepower + weight + year, data=auto_training, family=binomial)
+glm.prob = predict(glm.fit, auto_test, type="response")
+glm.pred = rep(0, length(mpg01_test))
+glm.pred[glm.prob > 0.5] = 1
+table(glm.pred, mpg01_test)
+mean(glm.pred != mpg01_test)
+```
+
+There's a test error rate of 8.1% for our logistic regression model.
+
+**g)**
+
+Let's reuse the script we made in question 10.
+
+```{r}
+train.X = cbind(auto_training$cylinders, auto_training$displacement, auto_training$horsepower, auto_training$weight, auto_training$year)
+test.X = cbind(auto_test$cylinders, auto_test$displacement, auto_test$horsepower, auto_test$weight, auto_test$year)
+
+nk = 50
+kvals = 1:nk
+
+error_rates = mapply(function(kval) {
+        knn.pred = knn(train.X, test.X, mpg01_train, k=kval)
+        return(mean(knn.pred != mpg01_test))
+    }, kvals)
+
+plot(error_rates, xlab="k", ylab="Error Rate")
+
+error_rates[33]
+```
+
+Best performance seems to be around k=33 which corresponds to an error rate of 7.1%, but none of this matches our original LDA model.
+
+### 12.
+
+**a)**
+
+```{r}
+Power = function() {
+    print(2^3)
+}
+
+Power()
+```
+
+**b)**
+
+```{r}
+Power2 = function(x, a) {
+    print(x^a)
+}
+
+Power2(3, 8)
+```
+
+**c)**
+
+```{r}
+Power2(10, 3)
+Power2(8, 17)
+Power2(131, 3)
+```
+
+**d)**
+
+```{r}
+Power3 = function(x, a) {
+    result = x^a
+    return(result)
+}
+
+Power3(3, 8)
+```
+
+**e)**
+
+```{r}
+plot(1:10, Power3(1:10, 2), log="xy")
+```
+
+**f)**
+
+```{r}
+PlotPower = function(x, a) {
+    plot(x, Power3(x, a))
+}
+
+PlotPower(1:10, 3)
+```
+
+### 13.
+
+```{r}
+library(MASS)
+attach(Boston)
+```
+
+
+```{r}
+crim01 = rep(0, length(crim))
+crim01[crim > median(crim)] = 1
+
+Boston = data.frame(Boston, crim01)
+pairs(Boston)
+```
+
+Let's split the data into training and test sets first.
+
+```{r}
+sample_size = floor(0.75 * nrow(Boston))
+set.seed(1) # so the training data is reproducible
+training = sample(seq_len(nrow(Boston)), sample_size)
+test = setdiff(c(1:nrow(Boston)), training)
+```
+
+I've done a few different ways of splitting training and test sets in this exercise just to see what I like best, this is probably my favourite but do whatever works best for you.
+
+```{r}
+glm.fit = glm(crim01 ~ . -crim, data=Boston, family=binomial, subset=training)
+summary(glm.fit)
+```
+
+Let's take zn, nox, age, dis, rad and tax and remove the other predictors from the model.
+
+```{r}
+glm.fit = glm(crim01 ~ zn + nox + age + dis + rad + tax, data=Boston, family=binomial, subset=training)
+summary(glm.fit)
+```
+
+And finally evaluate our test error rate.
+
+```{r}
+glm.prob = predict(glm.fit, Boston[test,], family=binomial, type="response")
+glm.pred = rep(0, length(crim01[test]))
+glm.pred[glm.prob > 0.5] = 1
+
+table(glm.pred, crim01[test])
+mean(glm.pred != crim01[test])
+```
+
+Test error rate for logistic regression model here is 13.3%.
+
+Let's evaluate LDA now.
+
+```{r}
+lda.fit = lda(crim01 ~ zn + nox + age + dis + rad + tax, data=Boston, subset=training)
+lda.pred = predict(lda.fit, Boston[test,])$class
+
+table(lda.pred, crim01[test])
+mean(lda.pred != crim01[test])
+```
+
+Test error rate for LDA model is 15.7%
+
+Onto QDA.
+
+```{r}
+qda.fit = qda(crim01 ~ zn + nox + age + dis + rad + tax, data=Boston, subset=training)
+qda.pred = predict(qda.fit, Boston[test,])$class
+
+table(qda.pred, crim01[test])
+mean(qda.pred != crim01[test])
+```
+
+QDA has the best performance thus far with a test error rate of 11.0%
+
+Finally KNN reusing the script we've been using throughout this chapter.
+
+```{r}
+train.X = cbind(zn, nox, age, dis, rad, tax)[training,]
+test.X = cbind(zn, nox, age, dis, rad, tax)[test, ]
+train.Y = crim01[training]
+test.Y = crim01[test]
+
+nk = 100
+kvals = 1:nk
+
+error_rates = mapply(function(kval) {
+        set.seed(1)
+        knn.pred = knn(train.X, test.X, train.Y, k=kval)
+        return(mean(knn.pred != test.Y))
+    }, kvals)
+
+plot(error_rates, xlab="k", ylab="Error Rate")
+```
+
+1-NN has the best performance with an error rate of 8.6%. To be honest I'm not entirely sure what to make of this, it could be implying there's a high degree of non-linearity in the required model which may help explain why QDA performs slightly better than logistic regression or LDA.

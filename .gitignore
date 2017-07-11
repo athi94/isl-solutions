@@ -1,0 +1,5 @@
+docs/_site
+docs/.sass-cache
+docs/.jekyll-metadata
+code/exercises/**/img
+code/exercises/**/*.md

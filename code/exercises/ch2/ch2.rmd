@@ -1,0 +1,260 @@
+---
+output: github_document
+---
+```{r opts, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "img/"
+)
+```
+
+### 8.
+
+**a)** 
+
+```{r}
+college = read.csv(file = "../datasets/College.csv", header = TRUE)
+```
+
+**b)**
+
+Fix can take a while... you have to close the window before the program proceeds as well.
+```{r}
+#fix(college)
+```
+
+Let's set rownames based on the University names in the first column, then remove that column from the actual data.
+```{r}
+rownames(college)=college[,1]
+college = college[,-1]
+#fix(college)
+```
+
+**c)**  
+
+i\.
+
+```{r}
+summary(college)
+```
+
+ii\.
+
+```{r}
+pairs(college[, 1:10])
+```
+
+iii\.
+
+Remember that `plot()` produces boxplots when the x axis variable is categorical, as should be expected. If it's numerical it will produce scatterplots. Hence remember to order the arguments to the function appropriately.
+
+```{r}
+attach(college)
+plot(Private, Outstate, xlab="Private", ylab="Out-out-state")
+```
+
+iv\.
+
+We first make a vector of "No" for as many universities as there are in the dataset. We then set some elements of that vector to "Yes" when the corresponding university has greater than 50% of their own students coming from the top 10% of their respective high schools. We then simply add the data to the college dataset and view a summary of it. 
+
+```{r}
+Elite = rep("No", nrow(college))
+Elite[college$Top10perc>50] = "Yes"
+Elite = as.factor(Elite)
+college = data.frame(college, Elite)
+summary(college$Elite)
+```
+
+```{r}
+plot(Elite, Outstate, xlab="Elite", ylab="Out-of-state")
+```
+
+**v)**
+
+```{r}
+par(mfrow=c(2,2))
+attach(college)
+hist(Apps, main="Histogram of Applications Received")
+hist(perc.alumni, col="red", main="Histogram of Alumni Donation Rate")
+hist(S.F.Ratio, col="purple", breaks=10, main="Histogram of Student/Faculty Ratio")
+hist(Expend, breaks=100, main="Histogram of Expenditure per Student")
+```
+
+**vi)**
+Let's explore more into data related to 'elite' schools. Our operational definition for an elite school is "more than 50% of new students were in the top 10% of their high school class".
+
+```{r}
+plot(Elite, Expend, xlab="Elite", ylab="Expenditure per Student")
+```
+
+As expected, institutions which are considered 'elite' spend more per student.
+
+```{r}
+plot(Elite, Grad.Rate, xlab="Elite", ylab="Graduation Rate")
+```
+
+Elite institutions also exhibit a higher graduation rate. However since our operational definition for elite is based on the quality of students, this is unsurprising. Note that there's some bad data in this set as one institution has a >100% graduation rate. Let's instead investigate the direct correlation between instructional expenditure per student and graduation rate using a scatterplot.
+
+```{r}
+plot(Expend, Grad.Rate, xlab="Expenditure per Student", ylab="Graduation Rate")
+```
+
+It appears that there is no strong correlation between graduation rate and expenditure per student until expenditure is more than $20,000. Though the outliers in this plot compress most of the data and make it hard to distinguish trends. Let's create a log plot on the x-axis to see if it helps us spot any other trends.
+
+```{r}
+plot(Expend, Grad.Rate, log = "x", xlab="Expenditure per Student", ylab="Graduation Rate")
+```
+
+This gives us a better view, the data appears to at least be weakly correlated. Now that we're done with this dataset let's detach it, it's still accessible via `College` but it's variables aren't directly int he search path.
+
+```{r}
+detach(college)
+```
+
+### 9.
+
+```{r}
+auto = read.csv(file = "../datasets/Auto.csv", header = TRUE, na.strings='?')
+auto = na.omit(auto)
+attach(auto)
+```
+
+**a)**
+
+```{r}
+dim(auto)
+summary(auto)
+#fix(auto)
+```
+
+* Quantitative
+    + Name
+    + Origin
+<br><br>
+* Qualitative
+    + MPG
+    + Cylinders
+    + Displacement
+    + Horsepower
+    + Weight
+    + Acceleration
+    + Year
+    
+**b)**
+
+We could apply `range()` to each variable individually bt that would be tedious and give output in an annoying form. Instead you can use `sapply()` which will apply a function to each element in the supplied vector and attempt to show the result in the most simplified way possible. Note that the dataset is already structured so all quantitative variables are grouped as the first 7 columns of the set.
+
+```{r}
+sapply(auto[, 1:7], range)
+```
+
+**c)**
+```{r}
+sapply(auto[, 1:7], mean)
+sapply(auto[, 1:7], sd)
+```
+
+**d)**
+
+To do this we'll use the `c()` operator. It combines arguments into a vector, you can then use `-c()` to get the complement of the set it creates. Thus since we want to exclude rows 10->85, we create a set of those indexes then use the complement to generate the dataset we want.
+
+```{r}
+auto_reduc = auto[-c(10:85),]
+sapply(auto_reduc[, 1:7], range)
+sapply(auto_reduc[, 1:7], mean)
+sapply(auto_reduc[, 1:7], sd)
+```
+
+**e)**
+```{r}
+pairs(auto)
+```
+MPG decreases exponentially with displacement, horsepower and weight. Horsepower increases linearly with weight. There's a weak correlation showing cars becoming generally more efficient over time.
+
+**f)**
+
+MPG has correlations to all other variables except name, hence they can all be used as predictors.
+
+```{r}
+detach(auto)
+```
+
+
+### 10.
+
+```{r}
+library(MASS)
+attach(Boston)
+?Boston
+```
+
+**a)**
+```{r}
+dim(Boston)
+```
+506 rows, 14 columns. Each row represents a tract within Boston, each column is a metric. 
+
+**b)**
+```{r}
+pairs(Boston)
+```
+
+There's a ridiculous amount of stuff going on here so we'll only comment on a few things. Note that areas with greater proprtions of industrial businesses tends to have higher nitrogen oxide concentrations. Crime rate are higher in neighborhoods with higher proportions of older buildings. Tracts which bound the Charles river tends to have lower crime rates.
+
+**c)**
+
+Yes, already touched on a few above. Crime rate are higher in neighborhoods with higher proportions of older buildings. Tracts which bound the Charles river tends to have lower crime rates. Crime rates increase with proximity to employment centers. Crime rates increase with property tax rates. Crime rates decrease with the median value of owner occupied homes.
+
+**d)**
+
+```{r}
+sapply(list(crim, tax, ptratio), range)
+boxplot(crim)
+title("per capita crime rate")
+boxplot(tax)
+title("property tax rate")
+boxplot(ptratio)
+title("pupil-teacher ratio")
+
+```
+
+There are notable tracts where crime rate is much higher than the typical norm, and some tracts where pupil-teacher ratio is quite low. There are not any significant outliers when it comes the property tax rate. It should also be noted that there are a number of tracts in which crime rate is near zero, they may be strictly non-residential areas. Regardless without being certain as to how that data is sourced it hould be noted that analysis of relationships involving crime rate using this data set could be skewed.
+
+**e)**
+```{r}
+table(chas)
+```
+
+35 tracts bound the Charles river.
+
+**f)**
+```{r}
+median(ptratio)
+```
+
+**g)**
+
+So this is a little trick, I'm calculating the percentile of each predictor value in the tract which has the lowest median value home relative to each predictors dataset.
+
+```{r}
+min_ind = which.min(medv)
+Boston[min_ind, ]
+mapply(function(x, i) ecdf(Boston[, i])(x), Boston[min_ind, ], seq_along(Boston[min_ind, ]))
+```
+We can see that this tract of land also has the highest proportion of old houses, highest accessibility to radial highways, and highest proportion of black population. It also has significantly high crime rate, proportion of large lots of residential land, industrial business land area, nitrogen oxide concentrations, property tax rate, pupil teacher ratio, and low-skill workers (lstat). It also has significantly low number of average rooms per dwelling, and is extremely close to major employment centres.
+
+**h)**
+```{r}
+table(rm > 7)
+table(rm > 8)
+
+mapply(
+    function(feature, i) {
+        mapply(function(x, i) ecdf(Boston[, i])(x), feature, i);
+    },
+    Boston[which(rm > 8), ],
+    seq_along(Boston[which(rm > 8), ])
+)
+
+```
+
+These percentiles show that the higher the average number of rooms, the higher the median value of the home which should be self-explanatory. These tracts also have typically high proportions of residential land zoned for lots over 25,000 square feet. They also mostly have better than average accessibility to radial highways though there is one significant outlier to that trend. They also tend to have lower proportions of low-skill workers (lstat).

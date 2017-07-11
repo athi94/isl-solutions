@@ -1,0 +1,598 @@
+---
+output: github_document
+---
+```{r opts, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "img/",
+  sanitize = FALSE
+)
+```
+
+### 8.
+
+Load the auto data set, let's get rid of the missing values.
+
+```{r}
+auto = read.csv('../../datasets/auto.csv', header=TRUE, na.strings='?')
+auto = na.omit(auto)
+```
+
+**a)**
+
+```{r}
+reg_mpg_hp = lm(mpg~horsepower, data=auto)
+summary(reg_mpg_hp)
+```
+
+**i.** We can safely say there's a relationship between horsepower and mpg due to the small p-value.
+
+**ii.** 
+
+So let's look at the RSE compared to the mean value of mpg 
+
+```{r}
+summary(reg_mpg_hp)$sigma / mean(auto$mpg)
+```
+
+This means that there's a ~20.1% error using this model. The $R^2$ factor indicates that 60.5% of the variance in mpg can be explained using horsepower. Both these mean that there's a relatively strong relationship here.
+
+**iii.** Negative, just have to look at the sign of the coefficient.
+
+**iv.** 
+
+```{r}
+predict(reg_mpg_hp, newdata=data.frame(horsepower=98), level=0.95, interval="confidence")
+predict(reg_mpg_hp, newdata=data.frame(horsepower=98), level=0.95, interval="prediction")
+
+```
+
+Where the fit is the prediction and lower and upper define the interval bounds.
+
+**b)**
+
+```{r}
+plot(auto$horsepower, auto$mpg)
+abline(reg_mpg_hp)
+```
+
+There's clearly some non-linearity in the relationship between horsepower and mpg, our model is really going to struggle to create accurate predictions because of that particularly at the extreme ends of horsepower.
+
+### 9.
+
+**a)**
+
+```{r}
+pairs(auto)
+```
+
+**b)**
+
+```{r}
+cor_auto = cor(auto[, 1:8])
+cor_auto
+```
+
+This isn't necessary but looking at a good plot is always nicer than a matrix of numbers.
+
+```{r}
+library(corrplot) # this isn't a default package, install it if you want it
+corrplot(cor_auto)
+```
+
+
+**c)**
+
+```{r}
+mulreg_mpg = lm(mpg ~ . - name, data=auto)
+summary(mulreg_mpg)
+```
+
+**i.** 
+
+Yes, so we're doing a multiple linear regression now so we're interested in look at the F-statistic and it's associated p-value to reject the null hypothesis. The p-value is tiny so we can safely say there is a relationship between at least some of the predictors and the response.
+
+**ii.**
+
+Weight, year, origin and displacement based on their respective p-values. We've discovered that horsepower isn't actually all that significant here, which actually makes sense as it's clearly going to be correlated with other variables like weight and displacement.
+
+**iii.**
+
+It's positive so it suggests that mpg improves over time, which is good news for the environment.
+
+**d)**
+
+```{r}
+par(mfrow=c(2,2))
+plot(mulreg_mpg)
+```
+There's a clear trend in the residuals vs the predicted values which indicates there's a degree of non-linearity that our model is not capturing. The normal Q-Q plot reflects this, if the residuals follow a normal distribution (which would be desired) the points fall on the straight line. Here we see the points deviate on the upper end of the plot indicating that are residuals are not normally distributed. We can see a point with particularly high leverage (14) as well as a few outliers, though the outliers don't have significant leverage so their impact on the model isn't that significant.
+
+**e)**
+
+We can use a bit of intuition to guess some significant interaction effects. For example I think horsepower and weight would have an interaction effect, as horsepower increases the impact of weight on MPG will multiply. Let's check it.
+
+```{r}
+lm.fit = lm(mpg ~ . -name +horsepower:weight, data=auto)
+summary(lm.fit)
+```
+Looks like the hunch was correct, that low p-value means the horsepower:weight interaction effect has statistical significance. We should also take note that cylinders and displacement don't have significance in this model anymore which isn't logically surprising, those two values are clearly related to horsepower and weight. Let's drop them from the model along with acceleration.
+
+```{r}
+lm.fit = lm(mpg ~ . -name -cylinders -acceleration -displacement +horsepower:weight, data=auto)
+summary(lm.fit)
+```
+
+We haven't suffered any loss in accuracy of the model though with less non-statistically significant predictors our F-statistic has increased significantly. Let's check if there's an interaction effect between weight and year now, my hunch is that increasing weight will have a much less significant impact on newer cars than lower cars.
+
+```{r}
+lm.fit = lm(mpg ~ . -name -cylinders -acceleration -displacement +horsepower:weight + weight:year, data=auto)
+summary(lm.fit)
+```
+
+Looks like a slight improvement on the model. Some further testing got me here:
+
+```{r}
+lm.fit = lm(mpg ~ origin +displacement*horsepower +displacement*weight +weight*year, data=auto)
+summary(lm.fit)
+```
+
+And let's plot the residuals for this model.
+
+```{r}
+par(mfrow=c(2,2))
+plot(lm.fit)
+```
+
+Definitely better than before but still could use some improvement.
+
+**f)**
+
+```{r}
+lm.fit = lm(mpg ~ origin +I(weight^2) +displacement*horsepower +displacement:weight +weight*year, data=auto)
+summary(lm.fit)
+```
+
+Well using a square factor on weight made the model worse.
+
+```{r}
+lm.fit = lm(mpg ~ origin +sqrt(displacement) +weight +displacement:horsepower +displacement:weight +weight*year, data=auto)
+summary(lm.fit)
+```
+
+Same with using a square root on displacement.
+
+```{r}
+lm.fit = lm(log(mpg) ~ origin +displacement*horsepower +displacement*weight +weight*year, data=auto)
+summary(lm.fit)
+```
+
+Interestingly using a log(mpg) fit has made the model fit the training data notably better, let's plot the residuals out.
+
+```{r}
+par(mfrow=c(2,2))
+plot(lm.fit)
+```
+
+The residuals are looking quite a lot better now, indicating that our model has accounted for a fair bit of the non-linearity in the relationships. It should be noted that we could be over fitting the model, unfortunately there's no test data.
+
+### 10.
+
+```{r}
+library(ISLR)
+```
+
+**a)**
+
+```{r}
+mulreg_price = lm(Sales ~ Price + Urban + US, data=Carseats)
+summary(mulreg_price)
+```
+**b)**
+
+Higher prices lead to less sales, stores in the US sell more car seats than those which are not. Whether the store is an an urban location is statistically insignificant.
+
+**c)**
+
+$$ Sales = \hat{\beta_0} + \hat{\beta_1}*Price + \hat{\beta_2}*isUrban + \hat{\beta_3}*inUS $$
+Where $\hat{\beta_0} = 13.043469, \hat{\beta_1} = -0.05449, \hat{\beta_2} = -0.021916, \hat{\beta_3} = 1.200573$.
+
+**d)**
+
+For Price and USYes.
+
+**e)**
+
+```{r}
+mulreg_price = lm(Sales ~ Price + US, data=Carseats)
+summary(mulreg_price)
+```
+
+**f)**
+
+The both fit poorly, only ~23.5% of the variance in sales is explained using both respective models.
+
+**g)**
+
+```{r}
+confint(mulreg_price, level=0.95)
+```
+
+**h)**
+
+```{r}
+par(mfrow=c(2,2))
+plot(mulreg_price)
+```
+
+No outliers as residuals fall within +-3. Compute the average leverage statistic, remembering that $\overline{h} = \frac{p+1}{n}$.
+
+```{r}
+(2+1)/nrow(Carseats)
+```
+
+We can see that there are a few leverage points which are significantly higher than the mean.
+
+### 11.
+```{r}
+set.seed(1)
+x=rnorm(100)
+y=2*x+rnorm(100)
+```
+
+**a)**
+
+```{r}
+lm.fit = lm(y ~ x + 0)
+summary(lm.fit)
+```
+
+The coefficient is extremely close to the true value, the null hypothesis has clearly been rejected given the p-value.
+
+**b)**
+
+```{r}
+lm.fit = lm(x ~ y + 0)
+summary(lm.fit)
+```
+
+Given the truth would be $x = \frac{1}{2}y$ the coefficient is further off. Though interestingly the t-value and hence corresponding p-value and $R^2$ statistics are identical. This makes conceptual sense given that it should represent how much variance in the output the predictor can account for which, given there is only one predictor, is logically invertible.
+
+**c)**
+
+Already explained this.
+
+**d)**
+
+$$\hat{\beta} = \frac{\sum x_iy_i}{\sum x_i^2}$$
+
+$$SE(\hat{\beta}) = \frac{\sum{(y_i - x_i\hat{\beta})^2}}{(n-1)\sum x_i^2}$$
+$$
+\begin{align*}
+t &= \frac{\hat{\beta}}{SE(\hat{\beta})} \\
+&= \frac{\sum x_iy_i}{\sum x_i^2} \times \frac{\sqrt{n-1}\sqrt{\sum x_i^2}}{\sqrt{\sum (y_i - x_i\hat{\beta})^2}} \\
+&= \frac{\sqrt{n-1}\sum x_iy_i}{\sqrt{\sum x_i^2 \sum(y_i - x_i\hat{\beta})^2}} \\
+&= \frac{\sqrt{n-1}\sum x_iy_i}{\sqrt{\sum x_i^2 \sum (y_i^2 -2\hat{\beta}x_iy_i + \hat{\beta}^2x_i^2)}} \\
+&= \frac{\sqrt{n-1}\sum x_iy_i}{\sqrt{\sum x_i^2 \sum (y_i^2 -2\frac{\sum x_iy_i}{\sum x_i^2}x_iy_i + (\frac{\sum x_iy_i}{\sum x_i^2})^2x_i^2)}} \\
+&= \frac{\sqrt{n-1}\sum x_iy_i}{\sqrt{\sum x_i^2 \sum y_i^2 - (\sum x_iy_i)^2}}
+\end{align*}
+$$
+Verify in R.
+
+```{r}
+n = length(x)
+sqrt(n-1)*sum(x*y) / sqrt(sum(x^2)*sum(y^2) - (sum(x*y))^2)
+```
+
+**e)**
+
+Simply put, it's trivial to see that by setting y=x, and x=y, that the resulting t equation is the same.
+
+**f)**
+
+```{r}
+lm.fit = lm(y~x)
+coef(summary(lm.fit))[, "t value"]
+```
+```{r}
+lm.fit = lm(x~y)
+coef(summary(lm.fit))[, "t value"]
+```
+
+### 12.
+
+**a)**
+
+When $\sum x_i^2 = \sum y_i^2$.
+
+**b)**
+
+```{r}
+set.seed(13)
+x = rnorm(100)
+y = 4*x + rnorm(100)
+lm.fit = lm(y~x)
+summary(lm.fit)
+```
+```{r}
+lm.fit = lm(x~y)
+summary(lm.fit)
+```
+As required.
+
+**c)**
+
+```{r}
+set.seed(13)
+x = rnorm(100)
+y = sample(x) # This just reorders x, you'll still get the same elements
+lm.fit = lm(y~x)
+summary(lm.fit)
+```
+```{r}
+lm.fit = lm(x~y)
+summary(lm.fit)
+```
+As required.
+
+### 13.
+
+```{r}
+set.seed(1)
+```
+
+**a)**
+
+```{r}
+x = rnorm(100)
+```
+
+**b)**
+
+```{r}
+eps = rnorm(100, mean=0, sd=sqrt(0.25))
+```
+
+**c)**
+
+```{r}
+y = -1 + 0.5*x + eps
+```
+
+Length of y is 100, $\hat{\beta_0} = -1, \hat{\beta_1} = 0.5$.
+
+**d)**
+
+```{r}
+plot(x, y)
+```
+A generally linear trend.
+
+**e)**
+
+```{r}
+lm.fit = lm(y~x)
+summary(lm.fit)
+```
+
+The estimates of both coefficients are very close to their true values.
+
+**f)**
+
+```{r}
+plot(x, y)
+abline(lm.fit, col=2)
+abline(-1, 0.5, col=3)
+legend(-1, legend = c("least squares", "pop. regression"), col=2:3, lwd=3)
+```
+
+**g)**
+```{r}
+lm.fitq = lm(y ~ x + I(x^2))
+summary(lm.fitq)
+```
+No. The p-value of the quadratic term deems it statistically insignfiicant and there's been a reduction in the adjusted $R^2$ factor.
+
+**h)**
+
+```{r}
+x = rnorm(100)
+eps = rnorm(100, mean=0, sd=sqrt(0.1))
+y = -1 + 0.5*x + eps
+
+lm.fit2 = lm(y ~ x)
+summary(lm.fit2)
+
+plot(x, y)
+abline(lm.fit2, col=2)
+abline(-1, 0.5, col=3)
+legend(-1, legend = c("linear fit", "pop. regression"), col=2:3, lwd=3)
+```
+
+The reduction in noise has caused the $R^2$ factor to increase as expected.
+
+**i)**
+
+```{r}
+x = rnorm(100)
+eps = rnorm(100, mean=0, sd=sqrt(0.5))
+y = -1 + 0.5*x + eps
+
+lm.fit3 = lm(y ~ x)
+summary(lm.fit3)
+
+plot(x, y)
+abline(lm.fit3, col=2)
+abline(-1, 0.5, col=3)
+legend(-1, legend = c("linear fit", "pop. regression"), col=2:3, lwd=3)
+```
+The fit is much worse as can be seen, the $R^2$ factor is correspondingly much lower.
+
+**j)**
+
+```{r}
+confint(lm.fit)
+confint(lm.fit2)
+confint(lm.fit3)
+```
+
+The least nnoisy set has the narrowest interval, and the noisiest set has the largest interval. As would be expected.
+
+### 14.
+
+**a)**
+
+```{r}
+set.seed(1)
+x1 = runif(100)
+x2 = 0.5*x1 + rnorm(100)/10
+y = 2 + 2*x1 + 0.3*x2 + rnorm(100)
+```
+
+$$Y = 2 + 2X_1 + 0.3X_2 + \epsilon \\ where~\beta_0 = 2,~\beta_1 = 2,~\beta_2 = 0.3$$
+
+**b)**
+
+```{r}
+plot(x1, x2)
+```
+
+It's easy to observe the linear relationship between x1 and x2 from the scatterplot.
+
+**c)**
+
+```{r}
+lm.fit = lm(y ~ x1 + x2)
+summary(lm.fit)
+```
+
+So it's easy to see that our estimates for $\beta_0$, $\beta_1$ and $\beta_2$ are pretty far off the true values. We can't reject the null hypothesis for $\beta_2$, we can reject it for $\beta_1$ with a significance level of 5% which is typical.
+
+**d)**
+
+```{r}
+lm.fit = lm(y ~ x1)
+summary(lm.fit)
+```
+
+We can comfortably reject the null hypothesis for $\beta_1$.
+
+**e)**
+
+```{r}
+lm.fit = lm(y ~ x2)
+summary(lm.fit)
+```
+
+Again, we can reject the null hypothesis for $\beta_1$ in this scenario.
+
+**f)**
+
+No. Let's first consider first what a correlation means, that there's some direct relationship between two predictors. We know the exact relationship in this instance, let's do some basic maths and see where that gets us.
+
+$$
+\begin{align*}
+Y &= 2 + 2X_1 + 0.3X_2 + \epsilon \\
+&= 2 + 2X_1 + 0.3(0.5X_1 + \gamma) \\
+&= 2 + 2.8X_1 + \epsilon'
+\end{align*}
+$$
+
+So it's easy to see that when a correlation between predictors exists, in reality the true form will simplify to using only one of the predictors. And of course we could just substitute in $X_1$ instead of $X_2$ and get an equally valid true form.
+
+So we would expect fitting a linear regression with only one of the two predictors to both result in statistically significant coefficients. But when we fit the model with both predictors one will not be significant, in essence because the other already is able to capture the information it contributes to the model.
+
+**g)**
+
+```{r}
+x1 = c(x1, 0.1)
+x2 = c(x2, 0.8)
+y = c(y, 6)
+
+lm.fit1 = lm(y ~ x1 + x2)
+summary(lm.fit1)
+
+plot(lm.fit1, which=5)
+```
+
+We see that now $X_2$ has become the significant predictor as opposed to $X_1$ and that the new point has high leverage.
+
+```{r}
+lm.fit2 = lm(y ~ x1)
+summary(lm.fit2)
+
+plot(lm.fit2, which=5)
+```
+
+In this model the new point is an outlier.
+
+```{r}
+lm.fit3 = lm(y ~ x2)
+summary(lm.fit3)
+
+plot(lm.fit3, which=5)
+```
+
+Again in the third model, the new point has high leverage.
+
+### 15.
+
+```{r}
+library(MASS)
+```
+
+**a)**
+
+```{r}
+# Let's just make sure chas gets represented properly as a qualitative variable
+# Boston$chas <- factor(Boston$chas, labels = c("N","Y"))
+
+pvals = c()
+for (predictor in Boston[-1]) {
+    lm.fit = lm(crim ~ predictor, data=Boston)
+    p = summary(lm.fit)$coefficients[2,4]
+    pvals = c(pvals, p)
+}
+names(Boston[-1])[which(pvals<0.05)]
+```
+
+All I've done is fitting the regression model in a loop using each predictor except crim again, I extract the p value from the summary and put it in an array. At the end I check what p values have a significance level < 5% and use their indices to grab the corresponding names out of Boston again. We can see that every predictor has a statistically significant significant association with the responce except "chas".
+
+**b)**
+
+```{r}
+lm.fit = lm(crim ~ ., data=Boston)
+summary(lm.fit)
+```
+
+We can reject the null hypothesis for zn, dis, rad, black, medv.
+
+**c)**
+
+Obviously there's less statistically significant predictors in the multiple linear regression model, this indicates collinearity between some predictors which should be expected taking a logical look at what each predictor represents.
+
+```{r}
+slm_coeffs = c()
+for (predictor in Boston[-1]) {
+    lm.fit = lm(crim ~ predictor, data=Boston)
+    c = coef(lm.fit)[2]
+    slm_coeffs = c(slm_coeffs, c)
+}
+
+lm.fit = lm(crim ~ ., data=Boston)
+plot(slm_coeffs, coef(lm.fit)[-1], xlab="Simple Regression Coef.", ylab="Multiple Regression Coef.")
+
+library(calibrate)
+textxy(slm_coeffs, coef(lm.fit)[-1], names(Boston[-1]))
+```
+
+**d)**
+
+```{r}
+lapply(Boston[-c(1, 4)], function(predictor) {
+    fit = lm(crim ~ poly(predictor, 3), data=Boston)
+    summary(fit)
+})
+```
+
+Yes for all except black, also chas as it is a qualitative variable.
+
