@@ -1187,7 +1187,7 @@ summary(lm.fit)
     ## Multiple R-squared:  0.2088, Adjusted R-squared:  0.1925 
     ## F-statistic:  12.8 on 2 and 97 DF,  p-value: 1.164e-05
 
-So it's easy to see that our estimates for *β*<sub>0</sub>, *β*<sub>1</sub> and *β*<sub>2</sub> are pretty far off the true values. We can't reject the null hypothesis for *β*<sub>2</sub>, we can reject it for *β*<sub>1</sub> with a signifiance level of 5% which is typical.
+So it's easy to see that our estimates for *β*<sub>0</sub>, *β*<sub>1</sub> and *β*<sub>2</sub> are pretty far off the true values. We can't reject the null hypothesis for *β*<sub>2</sub>, we can reject it for *β*<sub>1</sub> with a significance level of 5% which is typical.
 
 **d)**
 
@@ -1388,7 +1388,7 @@ names(Boston[-1])[which(pvals<0.05)]
     ##  [1] "zn"      "indus"   "nox"     "rm"      "age"     "dis"     "rad"    
     ##  [8] "tax"     "ptratio" "black"   "lstat"   "medv"
 
-All I've done is fitting the regression model in a loop using each predictor except crim again, I extract the p value from the summary and put it in an array. At the end I check what p values have a significance level &gt; 5% and use their indices to grab the corresponding names out of Boston again. We can see that every predictor has a statistically significant significant association with the responce except "chas".
+All I've done is fitting the regression model in a loop using each predictor except crim again, I extract the p value from the summary and put it in an array. At the end I check what p values have a significance level &lt; 5% and use their indices to grab the corresponding names out of Boston again. We can see that every predictor has a statistically significant significant association with the responce except "chas".
 
 **b)**
 
