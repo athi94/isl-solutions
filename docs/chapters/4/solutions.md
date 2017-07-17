@@ -990,4 +990,4 @@ plot(error_rates, xlab="k", ylab="Error Rate")
 
 ![](img/unnamed-chunk-38-1.png)
 
-1-NN has the best performance with an error rate of 8.6%. To be honest I'm not entirely sure what to make of this, it could be implying there's a high degree of non-linearity in the required model which may help explain why QDA performs slightly better than logistic regression or LDA.
+1-NN has the best performance with a test error rate of 8.6%. To be honest I'm not entirely sure what to make of this, it could be implying there's a high degree of non-linearity in the required model which may help explain why QDA performs slightly better than logistic regression or LDA.
