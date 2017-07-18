@@ -1,0 +1,357 @@
+---
+output: github_document
+---
+```{r opts, echo = FALSE}
+knitr::opts_chunk$set(
+  fig.path = "img/",
+  sanitize = FALSE
+)
+```
+
+### 5.
+
+```{r}
+library(ISLR)
+attach(Default)
+set.seed(1)
+```
+
+**a)**
+
+```{r}
+glm.fit = glm(default ~ income + balance, data=Default, family=binomial)
+```
+
+**b)**
+
+We'll split the full set 50/50 into training and validation then do our model fit and analysis.
+
+```{r}
+default_vs_error = function() {
+    train = sample(nrow(Default), nrow(Default)/2)
+    glm.fit.vs = glm(default ~ income + balance, data=Default, family=binomial, subset=train)
+    vs.probs = predict(glm.fit.vs, Default[-train, ], type="response")
+    vs.preds = rep("No", nrow(Default[-train, ]))
+    vs.preds[vs.probs > 0.5] = "Yes"
+    
+    return (mean(vs.preds != default[-train]))
+}
+
+default_vs_error()
+```
+
+**c)**
+
+```{r}
+default_vs_error()
+default_vs_error()
+default_vs_error()
+```
+
+We see some significant variation as expected when the training set changes.
+
+**d)**
+
+```{r}
+train = sample(nrow(Default), nrow(Default)/2)
+glm.fit.vs = glm(default ~ income + balance + student, data=Default, family=binomial, subset=train)
+vs.probs = predict(glm.fit.vs, Default[-train, ], type="response")
+vs.preds = rep("No", nrow(Default[-train, ]))
+vs.preds[vs.probs > 0.5] = "Yes"
+    
+mean(vs.preds != default[-train])
+```
+
+There's no statistically significant difference in the test error rate estimation using the validation set approach whether we include the student dummy variable or not.
+
+### 6.
+
+```{r}
+set.seed(1)
+```
+
+**a)**
+
+```{r}
+glm.fit = glm(default ~ income + balance, data=Default, family=binomial, subset=train)
+summary(glm.fit)
+```
+
+SE for income is approximately 7e-6 and SE for balance is approxmiately 3.1e-4.
+
+**b)**
+
+```{r}
+boot.fn = function(dataset, train_index) {
+    glm.fit = glm(default ~ income + balance, 
+                data=dataset, 
+                family=binomial, 
+                subset=train_index)
+    
+    return (c(coef(glm.fit)["income"], coef(glm.fit)["balance"]))
+}
+```
+
+**c)**
+
+This takes a little while to run (~40s on my machine).
+
+```{r}
+library(boot)
+boot(Default, boot.fn, R=1000)
+```
+
+|         | Bootstrap | Standard Formula (glm) |
+|---------|-----------|------------------------|
+| Income  | 4.58e-6   | 7.00e-6                |
+| Balance | 2.27e-4   | 3.12e-4                |
+
+The SE calculated using the bootstrap method are smaller.
+
+### 7.
+
+```{r}
+detach(Default)
+attach(Weekly)
+```
+
+**a)**
+
+```{r}
+glm.fit = glm(Direction ~ Lag1 + Lag2, data=Weekly, family=binomial)
+```
+
+**b)**
+
+```{r}
+glm.fit.loocv = glm(Direction ~ Lag1 + Lag2, data=Weekly, family=binomial, subset=-c(1))
+```
+
+**c)**
+
+```{r}
+predict(glm.fit.loocv, Weekly[1, ], type="response")
+```
+
+Therefore we predict the market to go up. 
+
+```{r}
+Direction[1]
+```
+
+But the actual direction is down so we're wrong.
+
+```{r}
+weekly_loocv = function(i) {
+    glm.fit.loocv = glm(Direction ~ Lag1 + Lag2, data=Weekly, family=binomial, subset=-c(i))
+    if (predict(glm.fit.loocv, Weekly[i, ], type="response") > 0.5) {
+        predict = "Up"
+    }
+    else {
+        predict = "Down"
+    }
+    
+    if (predict != Direction[i]) {
+        return (1)
+    }
+    return (0)
+}
+
+err = rep(0, nrow(Weekly))
+for (i in 1:nrow(Weekly)) {
+    err[i] = weekly_loocv(i)
+}
+
+mean(err)
+```
+
+LOOCV estimates a test error rate of 45%.
+
+### 8.
+
+**a)**
+
+```{r}
+set.seed(1)
+y = rnorm(100)
+x = rnorm(100)
+y = x - 2*x^2 + rnorm(100)
+```
+
+n = 100, p = 2.
+
+[EQUATION OF MODEL IN TEX HERE]
+
+**b)**
+
+```{r}
+plot(x, y)
+```
+
+Concave parabola with some degree of noise (as expected from the equation).
+
+**c)**
+
+```{r}
+set.seed(1)
+SimData = data.frame(x, y)
+```
+
+**i.**
+
+```{r}
+lm.fit = glm(y ~ poly(x, 1), data=SimData)
+cv.glm(SimData, lm.fit)$delta
+```
+
+**ii.**
+
+```{r}
+lm.fit = glm(y ~ poly(x, 2), data=SimData)
+cv.glm(SimData, lm.fit)$delta
+```
+
+**iii.**
+
+```{r}
+lm.fit = glm(y ~ poly(x, 3), data=SimData)
+cv.glm(SimData, lm.fit)$delta
+```
+
+**iv.**
+
+```{r}
+lm.fit = glm(y ~ poly(x, 4), data=SimData)
+cv.glm(SimData, lm.fit)$delta
+```
+
+
+**d)**
+
+```{r}
+set.seed(2)
+```
+
+**i.**
+
+```{r}
+lm.fit = glm(y ~ poly(x, 1), data=SimData)
+cv.glm(SimData, lm.fit)$delta
+```
+
+**ii.**
+
+```{r}
+lm.fit = glm(y ~ poly(x, 2), data=SimData)
+cv.glm(SimData, lm.fit)$delta
+```
+
+**iii.**
+
+```{r}
+lm.fit = glm(y ~ poly(x, 3), data=SimData)
+cv.glm(SimData, lm.fit)$delta
+```
+
+**iv.**
+
+```{r}
+lm.fit = glm(y ~ poly(x, 4), data=SimData)
+cv.glm(SimData, lm.fit)$delta
+```
+
+The results are identical as expected, LOOCV errors are deterministic, there is no randomosity stemming from training subset selection.
+
+**e)**
+
+The quadratic model, as expected as the underlying equation is qudratic.
+
+**f)**
+
+```{r}
+summary(glm(y ~ poly(x, 1), data=SimData))
+summary(glm(y ~ poly(x, 2), data=SimData))
+summary(glm(y ~ poly(x, 3), data=SimData))
+summary(glm(y ~ poly(x, 4), data=SimData))
+```
+
+Yes, the higher order (3rd and 4th) elements are statistically insignificant and so is the linear term in isolation. This validates the CV results as there's no statistically significant improvement in LOOCV error as we move from the quadratic model to the cubic and quartic models, but there is a significant improvement in moving from linear to quadratic.
+
+### 9.
+
+```{r}
+detach(Weekly)
+library(MASS)
+attach(Boston)
+```
+
+**a)**
+
+```{r}
+set.seed(1)
+mean(medv)
+```
+
+**b)**
+
+```{r}
+sd(medv)/sqrt(nrow(Boston))
+```
+
+Not sure what to interpret here, it's just the standard error of the sample mean.
+
+**c)**
+
+```{r}
+mean.fn = function(dataset, indices) {
+    return (mean(dataset[indices]))
+}
+
+boot(medv, mean.fn, R=1000)
+```
+
+We can see that the estimate for the mean is identical, the SE is very barely larger as estimated by the bootstrap method (0.412 vs 0.409).
+
+**d)**
+
+```{r}
+t.test(medv)
+
+22.53281 - 2*(0.4119374) # boostrap 95% CI lb
+22.53281 + 2*(0.4119374) # boostrap 95% CI ub
+```
+
+Again very similar but the bootstrap method has a slightly wider interval.
+
+**e)**
+
+```{r}
+median(medv)
+```
+
+**f)**
+
+```{r}
+median.fn = function(dataset, indices) {
+    return (median(dataset[indices]))
+}
+
+boot(medv, median.fn, R=1000)
+```
+
+**g)**
+
+```{r}
+quantile(medv, 0.1)
+```
+
+**h)**
+
+```{r}
+tenPer.fn = function(dataset, indices) {
+    return (quantile(dataset[indices], 0.1))
+}
+
+boot(medv, tenPer.fn, R=1000)
+```
+
