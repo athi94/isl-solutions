@@ -221,3 +221,246 @@ Not entirely sure how to go about this.
 
 ### 8.
 
+8.
+--
+
+**a)**
+
+``` r
+X = rnorm(100)
+eps = rnorm(100)
+```
+
+**b)**
+
+``` r
+b0 = 1
+b1 = 1
+b2 = 1
+b3 = 1
+
+Y = b0 + b1*X + b2*X^2 + b3*X^3 + eps
+```
+
+**c)**
+
+``` r
+library(leaps)
+
+df = data.frame(Y=Y, X=X)
+rfit.full = regsubsets(Y ~ poly(X, 10), data=df, nvmax=10)
+rfit.sum = summary(rfit.full)
+rfit.sum
+```
+
+    ## Subset selection object
+    ## Call: regsubsets.formula(Y ~ poly(X, 10), data = df, nvmax = 10)
+    ## 10 Variables  (and intercept)
+    ##               Forced in Forced out
+    ## poly(X, 10)1      FALSE      FALSE
+    ## poly(X, 10)2      FALSE      FALSE
+    ## poly(X, 10)3      FALSE      FALSE
+    ## poly(X, 10)4      FALSE      FALSE
+    ## poly(X, 10)5      FALSE      FALSE
+    ## poly(X, 10)6      FALSE      FALSE
+    ## poly(X, 10)7      FALSE      FALSE
+    ## poly(X, 10)8      FALSE      FALSE
+    ## poly(X, 10)9      FALSE      FALSE
+    ## poly(X, 10)10     FALSE      FALSE
+    ## 1 subsets of each size up to 10
+    ## Selection Algorithm: exhaustive
+    ##           poly(X, 10)1 poly(X, 10)2 poly(X, 10)3 poly(X, 10)4 poly(X, 10)5
+    ## 1  ( 1 )  "*"          " "          " "          " "          " "         
+    ## 2  ( 1 )  "*"          " "          "*"          " "          " "         
+    ## 3  ( 1 )  "*"          "*"          "*"          " "          " "         
+    ## 4  ( 1 )  "*"          "*"          "*"          " "          "*"         
+    ## 5  ( 1 )  "*"          "*"          "*"          " "          "*"         
+    ## 6  ( 1 )  "*"          "*"          "*"          " "          "*"         
+    ## 7  ( 1 )  "*"          "*"          "*"          "*"          "*"         
+    ## 8  ( 1 )  "*"          "*"          "*"          "*"          "*"         
+    ## 9  ( 1 )  "*"          "*"          "*"          "*"          "*"         
+    ## 10  ( 1 ) "*"          "*"          "*"          "*"          "*"         
+    ##           poly(X, 10)6 poly(X, 10)7 poly(X, 10)8 poly(X, 10)9
+    ## 1  ( 1 )  " "          " "          " "          " "         
+    ## 2  ( 1 )  " "          " "          " "          " "         
+    ## 3  ( 1 )  " "          " "          " "          " "         
+    ## 4  ( 1 )  " "          " "          " "          " "         
+    ## 5  ( 1 )  "*"          " "          " "          " "         
+    ## 6  ( 1 )  "*"          " "          " "          " "         
+    ## 7  ( 1 )  "*"          " "          " "          " "         
+    ## 8  ( 1 )  "*"          " "          " "          "*"         
+    ## 9  ( 1 )  "*"          " "          "*"          "*"         
+    ## 10  ( 1 ) "*"          "*"          "*"          "*"         
+    ##           poly(X, 10)10
+    ## 1  ( 1 )  " "          
+    ## 2  ( 1 )  " "          
+    ## 3  ( 1 )  " "          
+    ## 4  ( 1 )  " "          
+    ## 5  ( 1 )  " "          
+    ## 6  ( 1 )  "*"          
+    ## 7  ( 1 )  "*"          
+    ## 8  ( 1 )  "*"          
+    ## 9  ( 1 )  "*"          
+    ## 10  ( 1 ) "*"
+
+``` r
+plot(rfit.full, scale="Cp")
+```
+
+![](img/unnamed-chunk-4-1.png)
+
+``` r
+plot(rfit.full, scale="bic")
+```
+
+![](img/unnamed-chunk-4-2.png)
+
+``` r
+plot(rfit.full, scale="adjr2")
+```
+
+![](img/unnamed-chunk-4-3.png)
+
+Cp: B0, B1, B2, B3, B8 BIC: B0, B1, B2, B3 Adjusted R^2: B0, B1, B2, B3, B8
+
+**d)**
+
+``` r
+rfit.full = regsubsets(Y ~ poly(X, 10), data=df, nvmax=10, method="forward")
+plot(rfit.full, scale="Cp")
+```
+
+![](img/unnamed-chunk-5-1.png)
+
+``` r
+plot(rfit.full, scale="bic")
+```
+
+![](img/unnamed-chunk-5-2.png)
+
+``` r
+plot(rfit.full, scale="adjr2")
+```
+
+![](img/unnamed-chunk-5-3.png)
+
+``` r
+rfit.full = regsubsets(Y ~ poly(X, 10), data=df, nvmax=10, method="backward")
+plot(rfit.full, scale="Cp")
+```
+
+![](img/unnamed-chunk-6-1.png)
+
+``` r
+plot(rfit.full, scale="bic")
+```
+
+![](img/unnamed-chunk-6-2.png)
+
+``` r
+plot(rfit.full, scale="adjr2")
+```
+
+![](img/unnamed-chunk-6-3.png)
+
+Identical results for both forward and backward stepwise selection.
+
+**e)**
+
+``` r
+library(glmnet)
+```
+
+    ## Loading required package: Matrix
+
+    ## Loading required package: foreach
+
+    ## Loaded glmnet 2.0-10
+
+``` r
+set.seed(1)
+
+x.lasso = model.matrix(Y ~ poly(X, 10), data=df)[, -1]
+y.lasso = Y
+
+lasso.cv = cv.glmnet(x.lasso, y.lasso, alpha=1)
+plot(lasso.cv)
+```
+
+![](img/unnamed-chunk-7-1.png)
+
+``` r
+bestlam = lasso.cv$lambda.min
+lasso = glmnet(x.lasso, y.lasso, alpha=1, lambda=bestlam)
+lasso.coef = predict(lasso, type="coefficients")
+lasso.coef
+```
+
+    ## 11 x 1 sparse Matrix of class "dgCMatrix"
+    ##                       s0
+    ## (Intercept)    1.2516849
+    ## poly(X, 10)1  32.2328511
+    ## poly(X, 10)2   5.0281917
+    ## poly(X, 10)3  18.4941991
+    ## poly(X, 10)4   .        
+    ## poly(X, 10)5  -0.8580825
+    ## poly(X, 10)6   0.5029473
+    ## poly(X, 10)7   .        
+    ## poly(X, 10)8   .        
+    ## poly(X, 10)9   .        
+    ## poly(X, 10)10 -0.3194101
+
+Non zero coefficient estimates for B0, B1, B2, B3, B8. Identical results as obtained by subset/stepwise methods using Cp or AdjR2 metrics.
+
+**f)**
+
+``` r
+b7 = 1
+Y = b0 + b7*X^7 + eps
+df = data.frame(Y=Y, X=X)
+
+rfit.full = regsubsets(Y ~ poly(X, 10), data=df, nvmax=10)
+plot(rfit.full, scale="Cp")
+```
+
+![](img/unnamed-chunk-9-1.png)
+
+``` r
+plot(rfit.full, scale="bic")
+```
+
+![](img/unnamed-chunk-9-2.png)
+
+``` r
+plot(rfit.full, scale="adjr2")
+```
+
+![](img/unnamed-chunk-9-3.png)
+
+Cp: All but B9, B10 BIC: All but B8, B9, B10 Adjusted R^2: All but B9, B10
+
+``` r
+x.lasso = model.matrix(Y ~ poly(X, 10), data=df)[, -1]
+y.lasso = Y
+
+lasso.cv = cv.glmnet(x.lasso, y.lasso, alpha=1)
+lasso = glmnet(x.lasso, y.lasso, alpha=1)
+lasso.coef = predict(lasso, type="coefficients", s=lasso.cv$lambda.min)
+lasso.coef
+```
+
+    ## 11 x 1 sparse Matrix of class "dgCMatrix"
+    ##                        1
+    ## (Intercept)    -19.67344
+    ## poly(X, 10)1   742.76455
+    ## poly(X, 10)2  -586.83476
+    ## poly(X, 10)3   911.82687
+    ## poly(X, 10)4  -376.52253
+    ## poly(X, 10)5   279.41009
+    ## poly(X, 10)6   -27.87789
+    ## poly(X, 10)7    16.46163
+    ## poly(X, 10)8     .      
+    ## poly(X, 10)9     .      
+    ## poly(X, 10)10    .
+
+All Beta polynomials up to 5th power. All variable selection methods are failing quite badly here.
