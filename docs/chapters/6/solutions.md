@@ -214,4 +214,10 @@ And similarly for $\beta_2$, these solutions are found by setting each of these 
 
 ### 7.
 
+Not entirely sure how to go about this.
+
+
+<h1 class="post-subtitle">Applied</h1>
+
+### 8.
 
