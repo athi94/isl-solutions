@@ -159,7 +159,7 @@ $$
 
 $$
 \begin{align*}
-\frac{\partial f(\beta_1, \beta_2)}{\partial \beta_1} &= 0 = \beta_2(\lambda + 2x_1^2) + 2x_1^2\beta_1 - 2x_1y_1 \\
+\frac{\partial f(\beta_1, \beta_2)}{\partial \beta_2} &= 0 = \beta_2(\lambda + 2x_1^2) + 2x_1^2\beta_1 - 2x_1y_1 \\
 \lambda\beta_2 &= 2x_1y_1 - 2x_1^2(\beta_1 + \beta_2) = \lambda\beta_1
 \end{align*}
 $$
